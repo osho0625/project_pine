@@ -201,25 +201,31 @@ body.pine-hide-tabs #app-container {
 .pine-chat-header {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  padding: 12px 8px;
   background: var(--pine-green);
   color: var(--pine-white);
   flex-shrink: 0;
 }
 
 .pine-back-btn {
-  font-size: 20px;
-  margin-right: 12px;
+  font-size: 28px;
+  padding: 0 8px;
   cursor: pointer;
   color: var(--pine-white);
   background: none;
   border: none;
+  line-height: 1;
 }
 
 .pine-chat-title {
   font-size: 16px;
   font-weight: 600;
   flex: 1;
+  text-align: center;
+}
+
+.pine-chat-header-spacer {
+  width: 44px;
 }
 
 .pine-chat-messages {

@@ -12,8 +12,9 @@ async function renderChatRoom(container, roomId) {
   container.innerHTML = `
     <div class="pine-chat-wrapper">
       <div class="pine-chat-header">
-        <button class="pine-back-btn" aria-label="戻る">←</button>
+        <button class="pine-back-btn" aria-label="戻る">‹</button>
         <span class="pine-chat-title">チャット</span>
+        <span class="pine-chat-header-spacer"></span>
       </div>
       <div class="pine-chat-messages" id="pine-messages"></div>
       <form class="pine-chat-input" id="pine-chat-form">
@@ -28,10 +29,40 @@ async function renderChatRoom(container, roomId) {
   const form = document.getElementById('pine-chat-form');
   const input = document.getElementById('pine-msg-input');
   const backBtn = container.querySelector('.pine-back-btn');
+  const titleEl = container.querySelector('.pine-chat-title');
+
+  // Fetch room info for title
+  try {
+    const { data: roomData } = await pineSupabase
+      .from('pine_chat_rooms')
+      .select('name, is_group')
+      .eq('id', roomId)
+      .single();
+
+    if (roomData && !roomData.is_group) {
+      // DM: show other member's name
+      const { data: otherMember } = await pineSupabase
+        .from('pine_chat_room_members')
+        .select('pine_members(display_name)')
+        .eq('chat_room_id', roomId)
+        .neq('member_id', user.id)
+        .is('left_at', null)
+        .single();
+      titleEl.textContent = otherMember?.pine_members?.display_name || 'チャット';
+    } else if (roomData) {
+      titleEl.textContent = roomData.name || 'グループ';
+    }
+  } catch (e) { /* ignore */ }
+
+  // Hide main header and tab bar
+  document.querySelector('.pine-header').style.display = 'none';
+  document.getElementById('pine-tab-bar').style.display = 'none';
 
   // Back navigation
   backBtn.addEventListener('click', () => {
     MessageService.unsubscribeMessages(roomId);
+    document.querySelector('.pine-header').style.display = '';
+    document.getElementById('pine-tab-bar').style.display = '';
     location.hash = '/';
   });
 
