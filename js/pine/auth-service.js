@@ -1,7 +1,12 @@
 // Pine Auth Service
 const PineAuth = {
   async signInWithOtp(email) {
-    const { error } = await pineSupabase.auth.signInWithOtp({ email });
+    const { error } = await pineSupabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin + PINE_CONFIG.BASE_PATH + '/pages/pine.html',
+      },
+    });
     if (error) throw error;
   },
 

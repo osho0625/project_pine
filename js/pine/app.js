@@ -35,12 +35,11 @@ function renderLoginScreen(container) {
       <form id="login-form" class="pine-invite-form">
         <label for="login-email">メールアドレス</label>
         <input type="email" id="login-email" placeholder="you@example.com" required />
-        <button type="submit" class="pine-btn pine-btn-primary">ログイン (OTP)</button>
+        <button type="submit" class="pine-btn pine-btn-primary">ログインリンクを送信</button>
       </form>
       <div id="otp-section" style="display:none;">
-        <label for="otp-input">確認コード (メールに届きます)</label>
-        <input type="text" id="otp-input" placeholder="123456" maxlength="6" />
-        <button id="otp-verify-btn" class="pine-btn pine-btn-primary">確認</button>
+        <p style="color: var(--pine-green-dark); font-weight: 600;">✉️ メールをチェックしてください</p>
+        <p style="font-size: 13px; color: #666;">ログインリンクを送信しました。メール内のリンクをクリックするとログインできます。</p>
       </div>
       <div id="login-error" class="pine-error" style="display:none;"></div>
       <div id="login-success" class="pine-success" style="display:none;"></div>
@@ -48,8 +47,6 @@ function renderLoginScreen(container) {
       <p style="font-size: 13px; color: #888;">招待リンクをお持ちの方は、リンクから直接参加できます。</p>
     </div>
   `;
-
-  let loginEmail = '';
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -59,7 +56,6 @@ function renderLoginScreen(container) {
 
     try {
       await PineAuth.signInWithOtp(email);
-      loginEmail = email;
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('otp-section').style.display = 'block';
     } catch (err) {
