@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pine 🍍</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="stylesheet" href="../css/pine.css">
+</head>
+<body>
+  <header>
+    <span class="pine-icon">🍍</span>
+  </header>
+
+  <div id="app-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="../js/pine/config.js"></script>
+  <script src="../js/pine/supabase-client.js"></script>
+  <script src="../js/pine/router.js"></script>
+  <script src="../js/pine/auth-service.js"></script>
+  <script src="../js/pine/offline-store.js"></script>
+  <script src="../js/pine/room-service.js"></script>
+  <script src="../js/pine/message-service.js"></script>
+  <script src="../js/pine/call-service.js"></script>
+  <script src="../js/pine/push-service.js"></script>
+  <script src="../js/pine/presence-service.js"></script>
+  <script src="../js/pine/unread-service.js"></script>
+  <script src="../js/pine/storage-service.js"></script>
+  <script src="../js/pine/views/room-list.js"></script>
+  <script src="../js/pine/views/chat-room.js"></script>
+  <script src="../js/pine/views/call-screen.js"></script>
+  <script src="../js/pine/views/invite.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('../sw.js', { scope: '../' })
+        .then((reg) => console.log('Pine SW registered:', reg.scope))
+        .catch((err) => console.warn('Pine SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>

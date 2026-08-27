@@ -1,0 +1,483 @@
+/* Pine Chat App — LINE-style CSS */
+
+/* === Reset & Base === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --pine-green: #4a7c47;
+  --pine-green-light: #6ba368;
+  --pine-green-dark: #3a6237;
+  --pine-bg: #f5f5f5;
+  --pine-white: #ffffff;
+  --pine-gray-light: #e8e8e8;
+  --pine-gray: #999999;
+  --pine-gray-dark: #666666;
+  --pine-text: #333333;
+  --pine-text-light: #888888;
+  --pine-bubble-self: #c8e6c9;
+  --pine-bubble-other: #ffffff;
+  --pine-badge: #ff3b30;
+  --pine-radius: 12px;
+  --pine-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+  font-size: 15px;
+  color: var(--pine-text);
+  background: var(--pine-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* === Header === */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: var(--pine-green);
+  color: var(--pine-white);
+  font-size: 20px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--pine-shadow);
+}
+
+.pine-icon {
+  font-size: 24px;
+}
+
+/* === App Container === */
+#app-container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === Loading / Empty / Error === */
+.pine-loading, .pine-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--pine-gray);
+  font-size: 14px;
+}
+
+.pine-error {
+  padding: 12px 16px;
+  color: #d32f2f;
+  background: #ffebee;
+  border-radius: 8px;
+  margin: 8px 16px;
+  font-size: 13px;
+}
+
+.pine-success {
+  padding: 12px 16px;
+  color: var(--pine-green-dark);
+  background: #e8f5e9;
+  border-radius: 8px;
+  margin: 8px 16px;
+  font-size: 13px;
+}
+
+/* === Room List === */
+.pine-room-list {
+  padding: 8px 0;
+}
+
+.pine-room-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pine-room-card:active {
+  background: var(--pine-gray-light);
+}
+
+.pine-room-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.pine-room-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pine-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pine-room-preview {
+  font-size: 13px;
+  color: var(--pine-text-light);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pine-room-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.pine-room-time {
+  font-size: 11px;
+  color: var(--pine-gray);
+}
+
+.pine-room-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-top: 4px;
+  background: var(--pine-badge);
+  color: var(--pine-white);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+/* === Chat Room === */
+.pine-chat-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.pine-chat-back {
+  font-size: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+  color: var(--pine-green);
+  background: none;
+  border: none;
+}
+
+.pine-chat-title {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.pine-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Message Bubbles */
+.pine-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 80%;
+}
+
+.pine-msg-self {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.pine-msg-other {
+  align-self: flex-start;
+}
+
+.pine-msg-bubble {
+  padding: 10px 14px;
+  border-radius: var(--pine-radius);
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+  box-shadow: var(--pine-shadow);
+}
+
+.pine-msg-self .pine-msg-bubble {
+  background: var(--pine-bubble-self);
+  border-bottom-right-radius: 4px;
+}
+
+.pine-msg-other .pine-msg-bubble {
+  background: var(--pine-bubble-other);
+  border-bottom-left-radius: 4px;
+}
+
+.pine-msg-sender {
+  font-size: 11px;
+  color: var(--pine-gray);
+  margin-bottom: 2px;
+}
+
+.pine-msg-time {
+  font-size: 10px;
+  color: var(--pine-gray);
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.pine-msg-image {
+  max-width: 240px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Message Input */
+.pine-chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--pine-white);
+  border-top: 1px solid var(--pine-gray-light);
+  position: sticky;
+  bottom: 0;
+}
+
+.pine-chat-input input[type="text"] {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--pine-gray-light);
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pine-chat-input input[type="text"]:focus {
+  border-color: var(--pine-green);
+}
+
+.pine-chat-input button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--pine-green);
+  color: var(--pine-white);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pine-chat-input button:disabled {
+  background: var(--pine-gray);
+  cursor: not-allowed;
+}
+
+/* === Call Screen === */
+.pine-call-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 80vh;
+  background: linear-gradient(135deg, var(--pine-green-dark), var(--pine-green));
+  color: var(--pine-white);
+  text-align: center;
+  padding: 24px;
+}
+
+.pine-call-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.pine-call-name {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pine-call-status {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 40px;
+}
+
+.pine-call-actions {
+  display: flex;
+  gap: 24px;
+}
+
+.pine-call-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+
+.pine-call-btn:active {
+  transform: scale(0.9);
+}
+
+.pine-call-btn-accept {
+  background: #4caf50;
+  color: white;
+}
+
+.pine-call-btn-reject,
+.pine-call-btn-end {
+  background: #f44336;
+  color: white;
+}
+
+/* === Invite === */
+.pine-invite-panel {
+  max-width: 400px;
+  margin: 24px auto;
+  padding: 24px;
+  background: var(--pine-white);
+  border-radius: var(--pine-radius);
+  box-shadow: var(--pine-shadow);
+}
+
+.pine-invite-panel h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--pine-green-dark);
+}
+
+.pine-invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pine-invite-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pine-gray-dark);
+}
+
+.pine-invite-form input {
+  padding: 10px 12px;
+  border: 1px solid var(--pine-gray-light);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.pine-invite-form input:focus {
+  border-color: var(--pine-green);
+}
+
+.pine-invite-result {
+  margin-top: 16px;
+  padding: 12px;
+  background: #e8f5e9;
+  border-radius: 8px;
+}
+
+.pine-invite-url {
+  width: 100%;
+  padding: 8px;
+  font-size: 12px;
+  border: 1px solid var(--pine-gray-light);
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+/* === Buttons === */
+.pine-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.pine-btn:active {
+  opacity: 0.8;
+}
+
+.pine-btn-primary {
+  background: var(--pine-green);
+  color: var(--pine-white);
+}
+
+.pine-btn-copy {
+  background: var(--pine-gray-light);
+  color: var(--pine-text);
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+/* === Utility === */
+.pine-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--pine-green-light);
+  color: var(--pine-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* === Responsive === */
+@media (max-width: 480px) {
+  .pine-invite-panel {
+    margin: 16px;
+    padding: 16px;
+  }
+
+  .pine-msg {
+    max-width: 85%;
+  }
+}
