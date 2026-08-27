@@ -31,14 +31,25 @@ function renderLoginScreen(container) {
   // Hide tab bar and header actions during login
   const tabBar = document.getElementById('pine-tab-bar');
   if (tabBar) tabBar.style.display = 'none';
+  const header = document.querySelector('.pine-header');
+  if (header) header.style.display = 'none';
+
+  // Username to email map
+  const userMap = {
+    'りょうすけ': 'd29.ll.tennis@gmail.com',
+    'めぐみ': 'toppo5526@gmail.com',
+    'はるちか': 'dazanyo860@bangban.uk',
+    'いろは': 'zinufedo947@mama3.org',
+    'かいせい': 'yokyanokyo@usagica.com',
+  };
 
   container.innerHTML = `
     <div class="pine-invite-panel">
       <h2>🍍 Pine</h2>
       <p>家族チャットアプリ</p>
       <form id="login-form" class="pine-invite-form">
-        <label for="login-email">メールアドレス</label>
-        <input type="email" id="login-email" placeholder="you@example.com" required />
+        <label for="login-user">ユーザー名 or メールアドレス</label>
+        <input type="text" id="login-user" placeholder="りょうすけ or email" required />
         <label for="login-password">パスワード</label>
         <input type="password" id="login-password" placeholder="パスワード" required />
         <button type="submit" class="pine-btn pine-btn-primary">ログイン</button>
@@ -49,14 +60,17 @@ function renderLoginScreen(container) {
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
+    const userInput = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
     errorEl.style.display = 'none';
 
+    // Resolve username to email if needed
+    const email = userMap[userInput] || userInput;
+
     try {
       await PineAuth.signInWithPassword(email, password);
-      // Auth state change listener will handle navigation
+      startAuthenticatedApp(container);
     } catch (err) {
       errorEl.textContent = `ログインに失敗しました: ${err.message}`;
       errorEl.style.display = 'block';
@@ -65,6 +79,12 @@ function renderLoginScreen(container) {
 }
 
 function startAuthenticatedApp(container) {
+  // Show header and tab bar (may be hidden from login screen)
+  const headerEl = document.querySelector('.pine-header');
+  if (headerEl) headerEl.style.display = '';
+  const tabBarEl = document.getElementById('pine-tab-bar');
+  if (tabBarEl) tabBarEl.style.display = '';
+
   // Initialize services
   MessageService.init();
   PresenceService.init();
@@ -72,7 +92,7 @@ function startAuthenticatedApp(container) {
 
   const tabBar = document.getElementById('pine-tab-bar');
   const addBtn = document.getElementById('pine-add-btn');
-  let activeTab = 'friends';
+  let activeTab = 'chats';
 
   // Tab bar helper
   function showTabBar() {
