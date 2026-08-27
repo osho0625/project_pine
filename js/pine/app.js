@@ -31,14 +31,29 @@ function renderLoginScreen(container) {
   // Hide tab bar and header actions during login
   const tabBar = document.getElementById('pine-tab-bar');
   if (tabBar) tabBar.style.display = 'none';
+  const header = document.querySelector('.pine-header');
+  if (header) header.style.display = 'none';
+
+  // User list for password-only login
+  const users = [
+    { name: 'りょうすけ', email: 'd29.ll.tennis@gmail.com' },
+    { name: 'めぐみ', email: 'toppo5526@gmail.com' },
+    { name: 'はるちか', email: 'dazanyo860@bangban.uk' },
+    { name: 'いろは', email: 'zinufedo947@mama3.org' },
+    { name: 'かいせい', email: 'yokyanokyo@usagica.com' },
+  ];
+
+  const options = users.map(u => `<option value="${u.email}">${u.name}</option>`).join('');
 
   container.innerHTML = `
     <div class="pine-invite-panel">
       <h2>🍍 Pine</h2>
       <p>家族チャットアプリ</p>
       <form id="login-form" class="pine-invite-form">
-        <label for="login-email">メールアドレス</label>
-        <input type="email" id="login-email" placeholder="you@example.com" required />
+        <label for="login-user">ユーザー</label>
+        <select id="login-user" class="pine-select">
+          ${options}
+        </select>
         <label for="login-password">パスワード</label>
         <input type="password" id="login-password" placeholder="パスワード" required />
         <button type="submit" class="pine-btn pine-btn-primary">ログイン</button>
@@ -49,15 +64,21 @@ function renderLoginScreen(container) {
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
+    const email = document.getElementById('login-user').value;
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
     errorEl.style.display = 'none';
 
     try {
       await PineAuth.signInWithPassword(email, password);
-      // Auth state change listener will handle navigation
+      // Directly start the app (don't wait for auth listener)
+      startAuthenticatedApp(container);
     } catch (err) {
+      errorEl.textContent = `ログインに失敗しました: ${err.message}`;
+      errorEl.style.display = 'block';
+    }
+  });
+}
       errorEl.textContent = `ログインに失敗しました: ${err.message}`;
       errorEl.style.display = 'block';
     }

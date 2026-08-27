@@ -785,3 +785,18 @@ body.pine-hide-tabs #app-container {
   color: var(--pine-green);
   font-size: 28px;
 }
+
+/* Select dropdown */
+.pine-select {
+  padding: 10px 12px;
+  border: 1px solid var(--pine-gray-light);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: var(--pine-white);
+  appearance: auto;
+}
+
+.pine-select:focus {
+  border-color: var(--pine-green);
+}

@@ -23,18 +23,33 @@ async function renderRoomList(container) {
     let dmMemberNames = {};
 
     if (dmRoomIds.length > 0) {
+      // Get other members in DM rooms (avoid nested select issues with RLS)
       const { data: members } = await pineSupabase
         .from('pine_chat_room_members')
-        .select('chat_room_id, member_id, pine_members(display_name, avatar_url)')
+        .select('chat_room_id, member_id')
         .in('chat_room_id', dmRoomIds)
         .neq('member_id', user.id)
         .is('left_at', null);
 
-      if (members) {
+      if (members && members.length > 0) {
+        const memberIds = [...new Set(members.map(m => m.member_id))];
+        const { data: memberProfiles } = await pineSupabase
+          .from('pine_members')
+          .select('id, display_name, avatar_url')
+          .in('id', memberIds);
+
+        const profileMap = {};
+        if (memberProfiles) {
+          for (const p of memberProfiles) {
+            profileMap[p.id] = p;
+          }
+        }
+
         for (const m of members) {
+          const profile = profileMap[m.member_id];
           dmMemberNames[m.chat_room_id] = {
-            name: m.pine_members?.display_name || 'DM',
-            avatar_url: m.pine_members?.avatar_url || null,
+            name: profile?.display_name || 'DM',
+            avatar_url: profile?.avatar_url || null,
           };
         }
       }
