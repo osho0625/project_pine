@@ -14,7 +14,7 @@ async function renderChatRoom(container, roomId) {
       <div class="pine-chat-header">
         <button class="pine-back-btn" aria-label="戻る">‹</button>
         <span class="pine-chat-title">チャット</span>
-        <span class="pine-chat-header-spacer"></span>
+        <button class="pine-call-header-btn" id="pine-start-call-btn" aria-label="通話">📞</button>
       </div>
       <div class="pine-chat-messages" id="pine-messages"></div>
       <form class="pine-chat-input" id="pine-chat-form">
@@ -201,6 +201,23 @@ async function renderChatRoom(container, roomId) {
     } catch (err) {
       // On error, show retry option
       console.error('Send failed:', err);
+    }
+  });
+
+  // Start call button
+  const callBtn = document.getElementById('pine-start-call-btn');
+  callBtn.addEventListener('click', async () => {
+    try {
+      const result = await CallService.startCall(roomId);
+      if (result.status === 'busy') {
+        alert('相手は通話中です');
+      } else if (result.status === 'ok') {
+        // Navigate to call screen
+        container.innerHTML = '';
+        renderCallScreen(container, result.sessionId, 'caller');
+      }
+    } catch (err) {
+      alert('通話を開始できませんでした: ' + err.message);
     }
   });
 

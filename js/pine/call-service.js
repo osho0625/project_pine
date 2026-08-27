@@ -17,40 +17,17 @@ const CallService = {
   // ===== 11.1.1 WebRTC base setup =====
 
   async _fetchTurnCredentials() {
-    const { data: { session } } = await pineSupabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
-
-    const resp = await fetch(
-      `${PINE_CONFIG.SUPABASE_URL}/functions/v1/turn-credentials`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    if (!resp.ok) throw new Error('Failed to fetch TURN credentials');
-    return resp.json();
+    // P2P: STUN only (no TURN server needed for same-network/typical home connections)
+    return {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ]
+    };
   },
 
   async _createPeerConnection(turnCredentials) {
-    const config = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-      ],
-    };
-
-    // Add TURN servers from credentials
-    if (turnCredentials && turnCredentials.urls) {
-      config.iceServers.push({
-        urls: turnCredentials.urls,
-        username: turnCredentials.username,
-        credential: turnCredentials.credential,
-      });
-    }
-
-    const pc = new RTCPeerConnection(config);
+    const pc = new RTCPeerConnection(turnCredentials);
 
     // ICE candidate handling (11.1.3)
     pc.onicecandidate = (event) => {
