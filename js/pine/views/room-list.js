@@ -5,8 +5,22 @@ async function renderRoomList(container) {
   try {
     const rooms = await RoomService.getRoomList();
 
+    // Action buttons (always visible)
+    const actions = document.createElement('div');
+    actions.className = 'pine-room-actions';
+    actions.innerHTML = `
+      <button class="pine-btn pine-btn-primary" id="pine-new-dm-btn">+ DM</button>
+      <button class="pine-btn pine-btn-primary" id="pine-invite-btn">👤 招待</button>
+    `;
+
     if (rooms.length === 0) {
-      container.innerHTML = '<div class="pine-empty">チャットルームがありません</div>';
+      container.innerHTML = '';
+      container.appendChild(actions);
+      const empty = document.createElement('div');
+      empty.className = 'pine-empty';
+      empty.textContent = 'チャットルームがありません。DMを始めるか、メンバーを招待しましょう。';
+      container.appendChild(empty);
+      attachRoomListActions(container);
       return;
     }
 
@@ -73,9 +87,35 @@ async function renderRoomList(container) {
     }
 
     container.innerHTML = '';
+    container.appendChild(actions);
     container.appendChild(list);
+    attachRoomListActions(container);
   } catch (err) {
     container.innerHTML = `<div class="pine-error">エラー: ${err.message}</div>`;
+  }
+}
+
+function attachRoomListActions(container) {
+  const dmBtn = container.querySelector('#pine-new-dm-btn');
+  const inviteBtn = container.querySelector('#pine-invite-btn');
+
+  if (dmBtn) {
+    dmBtn.addEventListener('click', async () => {
+      const memberId = prompt('DM相手のメンバーIDを入力:');
+      if (!memberId) return;
+      try {
+        const roomId = await RoomService.getOrCreateDM(memberId);
+        location.hash = `room/${roomId}`;
+      } catch (err) {
+        alert(`エラー: ${err.message}`);
+      }
+    });
+  }
+
+  if (inviteBtn) {
+    inviteBtn.addEventListener('click', () => {
+      location.hash = 'invite';
+    });
   }
 }
 

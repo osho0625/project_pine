@@ -481,3 +481,18 @@ header {
     max-width: 85%;
   }
 }
+
+/* === Room List Actions === */
+.pine-room-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+}
+
+.pine-room-actions .pine-btn {
+  flex: 1;
+  font-size: 13px;
+  padding: 8px 12px;
+}
