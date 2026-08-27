@@ -2,7 +2,7 @@
 const PINE_CONFIG = {
   BASE_PATH: new URL(document.currentScript.src).pathname.split('/js/')[0] || '',
   SUPABASE_URL: 'https://snxvohbfuqdqrwygqpzl.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_zHuDwitjvIh9z-Vb-f-GLg_SEr6rVXH',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNueHZvaGJmdXFkcXJ3eWdxcHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NzA5MTcsImV4cCI6MjEwMzM0NjkxN30.sml7VdMTLATHQjjravxwrNGvVbKu96RN5b8iBLLpAIQ',
   PUSH_SUPPRESS_TTL: 30, // seconds
   HEARTBEAT_INTERVAL: 15000, // 15 seconds
   OUTBOX_STUCK_TIMEOUT: 5 * 60 * 1000, // 5 minutes
