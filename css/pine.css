@@ -42,23 +42,48 @@ body {
 }
 
 /* === Header === */
-header {
+.pine-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 12px 16px;
   background: var(--pine-green);
   color: var(--pine-white);
-  font-size: 20px;
-  font-weight: 700;
   position: sticky;
   top: 0;
   z-index: 100;
   box-shadow: var(--pine-shadow);
 }
 
-.pine-icon {
-  font-size: 24px;
+.pine-header-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pine-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pine-header-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: var(--pine-white);
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.pine-header-icon-btn:active {
+  background: rgba(255,255,255,0.4);
 }
 
 /* === App Container === */
@@ -66,6 +91,10 @@ header {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+body.pine-hide-tabs #app-container {
+  padding-bottom: 0;
 }
 
 /* === Loading / Empty / Error === */
@@ -165,31 +194,43 @@ header {
   border-radius: 10px;
 }
 
-/* === Chat Room === */
+/* === Chat Room (LINE style) === */
+.pine-chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: #8fb0c4;
+}
+
 .pine-chat-header {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  background: var(--pine-white);
-  border-bottom: 1px solid var(--pine-gray-light);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  padding: 12px 8px;
+  background: var(--pine-green);
+  color: var(--pine-white);
+  flex-shrink: 0;
 }
 
-.pine-chat-back {
-  font-size: 20px;
-  margin-right: 12px;
+.pine-back-btn {
+  font-size: 28px;
+  padding: 0 8px;
   cursor: pointer;
-  color: var(--pine-green);
+  color: var(--pine-white);
   background: none;
   border: none;
+  line-height: 1;
 }
 
 .pine-chat-title {
   font-size: 16px;
   font-weight: 600;
   flex: 1;
+  text-align: center;
+}
+
+.pine-chat-header-spacer {
+  width: 44px;
 }
 
 .pine-chat-messages {
@@ -198,10 +239,17 @@ header {
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Message Bubbles */
+.pine-chat-messages::-webkit-scrollbar {
+  display: none;
+}
+
+/* Message Bubbles — LINE style */
 .pine-msg {
   display: flex;
   align-items: flex-end;
@@ -218,45 +266,64 @@ header {
   align-self: flex-start;
 }
 
+.pine-msg-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.pine-msg-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
 .pine-msg-bubble {
   padding: 10px 14px;
-  border-radius: var(--pine-radius);
+  border-radius: 16px;
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
-  box-shadow: var(--pine-shadow);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 
 .pine-msg-self .pine-msg-bubble {
-  background: var(--pine-bubble-self);
+  background: #c8e6c9;
   border-bottom-right-radius: 4px;
 }
 
 .pine-msg-other .pine-msg-bubble {
-  background: var(--pine-bubble-other);
+  background: var(--pine-white);
   border-bottom-left-radius: 4px;
 }
 
 .pine-msg-sender {
   font-size: 11px;
-  color: var(--pine-gray);
+  color: rgba(255,255,255,0.8);
   margin-bottom: 2px;
+  padding-left: 2px;
 }
 
 .pine-msg-time {
   font-size: 10px;
-  color: var(--pine-gray);
+  color: rgba(0,0,0,0.4);
   white-space: nowrap;
+  margin-top: 2px;
+  padding: 0 4px;
+}
+
+.pine-msg-self .pine-msg-time {
   align-self: flex-end;
 }
 
 .pine-msg-image {
-  max-width: 240px;
+  max-width: 200px;
   border-radius: 8px;
-  cursor: pointer;
 }
 
-/* Message Input */
+/* Chat Input */
 .pine-chat-input {
   display: flex;
   align-items: center;
@@ -264,8 +331,7 @@ header {
   padding: 8px 12px;
   background: var(--pine-white);
   border-top: 1px solid var(--pine-gray-light);
-  position: sticky;
-  bottom: 0;
+  flex-shrink: 0;
 }
 
 .pine-chat-input input[type="text"] {
@@ -275,7 +341,6 @@ header {
   border-radius: 20px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .pine-chat-input input[type="text"]:focus {
@@ -480,4 +545,243 @@ header {
   .pine-msg {
     max-width: 85%;
   }
+}
+
+/* === Room List Actions === */
+.pine-room-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+}
+
+.pine-room-actions .pine-btn {
+  flex: 1;
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+/* === Tab Bar (上部、ヘッダー下) === */
+.pine-tab-bar {
+  display: flex;
+  position: sticky;
+  top: 52px;
+  left: 0;
+  right: 0;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+  z-index: 99;
+}
+
+.pine-tab {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--pine-gray);
+  cursor: pointer;
+  text-align: center;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.pine-tab.active {
+  color: var(--pine-green);
+  border-bottom-color: var(--pine-green);
+  font-weight: 600;
+}
+
+.pine-tab:active {
+  background: var(--pine-gray-light);
+}
+
+/* Hide tab bar in room/call views */
+.pine-tab-bar.pine-hide-tabs {
+  display: none;
+}
+
+/* === Friend List === */
+.pine-friend-list {
+  padding: 8px 0;
+}
+
+.pine-friend-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pine-friend-card:active {
+  background: var(--pine-gray-light);
+}
+
+.pine-friend-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pine-friend-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pine-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pine-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+/* === Modal === */
+.pine-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pine-modal-content {
+  background: var(--pine-white);
+  border-radius: var(--pine-radius);
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.pine-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--pine-gray);
+  line-height: 1;
+}
+
+/* === Profile Page === */
+.pine-profile-page {
+  max-width: 400px;
+  margin: 24px auto;
+  padding: 24px;
+  text-align: center;
+}
+
+.pine-profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pine-profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--pine-green-light);
+  color: var(--pine-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.pine-profile-avatar .pine-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pine-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.pine-profile-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pine-gray-dark);
+}
+
+.pine-profile-form input {
+  padding: 10px 12px;
+  border: 1px solid var(--pine-gray-light);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.pine-profile-info {
+  text-align: left;
+  font-size: 13px;
+  color: var(--pine-gray-dark);
+  margin-bottom: 16px;
+}
+
+.pine-btn-danger {
+  background: #f44336;
+  color: white;
+  width: 100%;
+}
+
+.pine-btn-small {
+  font-size: 12px;
+  padding: 6px 14px;
+}
+
+/* Room card with avatar */
+.pine-room-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--pine-white);
+  border-bottom: 1px solid var(--pine-gray-light);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+/* Profile header */
+.pine-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--pine-green-dark);
+}
+
+.pine-profile-header .pine-back-btn {
+  color: var(--pine-green);
+  font-size: 28px;
 }

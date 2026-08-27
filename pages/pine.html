@@ -8,11 +8,25 @@
   <link rel="stylesheet" href="../css/pine.css">
 </head>
 <body>
-  <header>
-    <span class="pine-icon">🍍</span>
+  <header class="pine-header">
+    <span class="pine-header-title">🍍 Pine</span>
+    <div class="pine-header-actions">
+      <button class="pine-header-icon-btn" id="pine-add-btn" aria-label="招待">+</button>
+      <button class="pine-header-icon-btn" id="pine-settings-btn" aria-label="設定">⚙</button>
+    </div>
   </header>
 
+  <nav class="pine-tab-bar" id="pine-tab-bar">
+    <button class="pine-tab active" data-tab="friends">👥 友達</button>
+    <button class="pine-tab" data-tab="chats">💬 チャット</button>
+  </nav>
+
   <div id="app-container"></div>
+
+  <!-- Invite Modal -->
+  <div class="pine-modal-overlay" id="pine-invite-modal" style="display:none;">
+    <div class="pine-modal-content" id="pine-invite-modal-content"></div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="../js/pine/config.js"></script>
@@ -27,10 +41,13 @@
   <script src="../js/pine/presence-service.js"></script>
   <script src="../js/pine/unread-service.js"></script>
   <script src="../js/pine/storage-service.js"></script>
+  <script src="../js/pine/views/friends-list.js"></script>
   <script src="../js/pine/views/room-list.js"></script>
   <script src="../js/pine/views/chat-room.js"></script>
   <script src="../js/pine/views/call-screen.js"></script>
   <script src="../js/pine/views/invite.js"></script>
+  <script src="../js/pine/views/profile.js"></script>
+  <script src="../js/pine/app.js"></script>
   <script>
     // Register Service Worker
     if ('serviceWorker' in navigator) {

@@ -1,50 +1,89 @@
-// Pine Room List View
+// Pine Room List View (Chats tab)
 async function renderRoomList(container) {
   container.innerHTML = '<div class="pine-loading">読み込み中...</div>';
 
   try {
+    const { data: { user } } = await pineSupabase.auth.getUser();
     const rooms = await RoomService.getRoomList();
 
-    if (rooms.length === 0) {
-      container.innerHTML = '<div class="pine-empty">チャットルームがありません</div>';
+    // Filter: only show rooms that have at least one message
+    const roomsWithMessages = rooms.filter(room => room.last_message !== null);
+
+    if (roomsWithMessages.length === 0) {
+      container.innerHTML = `
+        <div class="pine-empty">
+          チャット履歴がありません。<br>友達タブからDMを始めましょう。
+        </div>
+      `;
       return;
+    }
+
+    // For DM rooms, fetch the other member's name
+    const dmRoomIds = roomsWithMessages.filter(r => !r.is_group).map(r => r.id);
+    let dmMemberNames = {};
+
+    if (dmRoomIds.length > 0) {
+      const { data: members } = await pineSupabase
+        .from('pine_chat_room_members')
+        .select('chat_room_id, member_id, pine_members(display_name, avatar_url)')
+        .in('chat_room_id', dmRoomIds)
+        .neq('member_id', user.id)
+        .is('left_at', null);
+
+      if (members) {
+        for (const m of members) {
+          dmMemberNames[m.chat_room_id] = {
+            name: m.pine_members?.display_name || 'DM',
+            avatar_url: m.pine_members?.avatar_url || null,
+          };
+        }
+      }
     }
 
     const list = document.createElement('div');
     list.className = 'pine-room-list';
 
-    for (const room of rooms) {
+    for (const room of roomsWithMessages) {
       const card = document.createElement('div');
       card.className = 'pine-room-card';
       card.addEventListener('click', () => {
         location.hash = `room/${room.id}`;
       });
 
-      // Room name
+      // Room name: use other member's name for DMs
       const nameEl = document.createElement('div');
       nameEl.className = 'pine-room-name';
-      nameEl.textContent = room.name || 'DM';
+      const dmInfo = dmMemberNames[room.id];
+      nameEl.textContent = room.is_group
+        ? (room.name || 'グループ')
+        : (dmInfo?.name || 'DM');
+
+      // Avatar
+      const avatarEl = document.createElement('div');
+      avatarEl.className = 'pine-avatar';
+      if (!room.is_group && dmInfo?.avatar_url) {
+        avatarEl.innerHTML = `<img src="${dmInfo.avatar_url}" class="pine-avatar-img">`;
+      } else {
+        const initial = room.is_group
+          ? (room.name || 'G').charAt(0)
+          : (dmInfo?.name || '?').charAt(0);
+        avatarEl.textContent = initial;
+      }
 
       // Last message preview
       const previewEl = document.createElement('div');
       previewEl.className = 'pine-room-preview';
-      if (room.last_message) {
-        const preview = room.last_message.message_type === 'image'
-          ? '📷 画像'
-          : (room.last_message.content || '');
-        previewEl.textContent = preview.length > 40
-          ? preview.substring(0, 40) + '…'
-          : preview;
-      } else {
-        previewEl.textContent = 'メッセージなし';
-      }
+      const preview = room.last_message.message_type === 'image'
+        ? '📷 画像'
+        : (room.last_message.content || '');
+      previewEl.textContent = preview.length > 40
+        ? preview.substring(0, 40) + '…'
+        : preview;
 
       // Timestamp
       const timeEl = document.createElement('div');
       timeEl.className = 'pine-room-time';
-      if (room.last_message) {
-        timeEl.textContent = formatRoomTime(room.last_message.created_at);
-      }
+      timeEl.textContent = formatRoomTime(room.last_message.created_at);
 
       // Unread badge
       const badgeEl = document.createElement('div');
@@ -67,6 +106,7 @@ async function renderRoomList(container) {
       rightEl.appendChild(timeEl);
       rightEl.appendChild(badgeEl);
 
+      card.appendChild(avatarEl);
       card.appendChild(leftEl);
       card.appendChild(rightEl);
       list.appendChild(card);
