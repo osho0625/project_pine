@@ -3,6 +3,7 @@ async function renderRoomList(container) {
   container.innerHTML = '<div class="pine-loading">読み込み中...</div>';
 
   try {
+    const { data: { user } } = await pineSupabase.auth.getUser();
     const rooms = await RoomService.getRoomList();
 
     // Filter: only show rooms that have at least one message
@@ -17,6 +18,25 @@ async function renderRoomList(container) {
       return;
     }
 
+    // For DM rooms, fetch the other member's name
+    const dmRoomIds = roomsWithMessages.filter(r => !r.is_group).map(r => r.id);
+    let dmMemberNames = {};
+
+    if (dmRoomIds.length > 0) {
+      const { data: members } = await pineSupabase
+        .from('pine_chat_room_members')
+        .select('chat_room_id, member_id, pine_members(display_name)')
+        .in('chat_room_id', dmRoomIds)
+        .neq('member_id', user.id)
+        .is('left_at', null);
+
+      if (members) {
+        for (const m of members) {
+          dmMemberNames[m.chat_room_id] = m.pine_members?.display_name || 'DM';
+        }
+      }
+    }
+
     const list = document.createElement('div');
     list.className = 'pine-room-list';
 
@@ -27,10 +47,12 @@ async function renderRoomList(container) {
         location.hash = `room/${room.id}`;
       });
 
-      // Room name
+      // Room name: use other member's name for DMs
       const nameEl = document.createElement('div');
       nameEl.className = 'pine-room-name';
-      nameEl.textContent = room.name || 'DM';
+      nameEl.textContent = room.is_group
+        ? (room.name || 'グループ')
+        : (dmMemberNames[room.id] || 'DM');
 
       // Last message preview
       const previewEl = document.createElement('div');
