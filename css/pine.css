@@ -86,7 +86,6 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 52px;
 }
 
 body.pine-hide-tabs #app-container {
@@ -522,17 +521,16 @@ body.pine-hide-tabs #app-container {
   padding: 8px 12px;
 }
 
-/* === Tab Bar === */
+/* === Tab Bar (上部、ヘッダー下) === */
 .pine-tab-bar {
   display: flex;
-  position: fixed;
-  bottom: 0;
+  position: sticky;
+  top: 52px;
   left: 0;
   right: 0;
   background: var(--pine-white);
-  border-top: 1px solid var(--pine-gray-light);
-  z-index: 100;
-  box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--pine-gray-light);
+  z-index: 99;
 }
 
 .pine-tab {
@@ -544,13 +542,13 @@ body.pine-hide-tabs #app-container {
   color: var(--pine-gray);
   cursor: pointer;
   text-align: center;
-  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
   transition: color 0.2s, border-color 0.2s;
 }
 
 .pine-tab.active {
   color: var(--pine-green);
-  border-top-color: var(--pine-green);
+  border-bottom-color: var(--pine-green);
   font-weight: 600;
 }
 
@@ -604,3 +602,42 @@ body.pine-hide-tabs #app-container {
   object-fit: cover;
 }
 
+
+/* === Modal === */
+.pine-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pine-modal-content {
+  background: var(--pine-white);
+  border-radius: var(--pine-radius);
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.pine-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--pine-gray);
+  line-height: 1;
+}

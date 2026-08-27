@@ -132,9 +132,21 @@ function startAuthenticatedApp(container) {
     renderActiveTab();
   });
 
-  // + button → invite
+  // + button → invite modal
   addBtn.addEventListener('click', () => {
-    location.hash = 'invite';
+    const modal = document.getElementById('pine-invite-modal');
+    const modalContent = document.getElementById('pine-invite-modal-content');
+    modalContent.innerHTML = '<button class="pine-modal-close" id="pine-modal-close-btn">×</button>';
+    renderInviteView(modalContent);
+    modal.style.display = 'flex';
+
+    // Close modal
+    document.getElementById('pine-modal-close-btn').addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
   });
 
   // Setup router
