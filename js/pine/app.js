@@ -79,6 +79,12 @@ function renderLoginScreen(container) {
 }
 
 function startAuthenticatedApp(container) {
+  // Show header and tab bar (may be hidden from login screen)
+  const headerEl = document.querySelector('.pine-header');
+  if (headerEl) headerEl.style.display = '';
+  const tabBarEl = document.getElementById('pine-tab-bar');
+  if (tabBarEl) tabBarEl.style.display = '';
+
   // Initialize services
   MessageService.init();
   PresenceService.init();
@@ -86,7 +92,7 @@ function startAuthenticatedApp(container) {
 
   const tabBar = document.getElementById('pine-tab-bar');
   const addBtn = document.getElementById('pine-add-btn');
-  let activeTab = 'friends';
+  let activeTab = 'chats';
 
   // Tab bar helper
   function showTabBar() {
