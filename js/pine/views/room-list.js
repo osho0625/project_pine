@@ -101,10 +101,47 @@ function attachRoomListActions(container) {
 
   if (dmBtn) {
     dmBtn.addEventListener('click', async () => {
-      const memberId = prompt('DM相手のメンバーIDを入力:');
-      if (!memberId) return;
+      // 友達リストを取得して選択UIを表示
       try {
-        const roomId = await RoomService.getOrCreateDM(memberId);
+        const { data: { user } } = await pineSupabase.auth.getUser();
+        const { data: friendships } = await pineSupabase
+          .from('pine_friendships')
+          .select('member_a, member_b')
+          .or(`member_a.eq.${user.id},member_b.eq.${user.id}`);
+
+        if (!friendships || friendships.length === 0) {
+          alert('友達がいません。まず招待しましょう。');
+          return;
+        }
+
+        // Get friend IDs
+        const friendIds = friendships.map(f =>
+          f.member_a === user.id ? f.member_b : f.member_a
+        );
+
+        // Fetch friend names
+        const { data: friends } = await pineSupabase
+          .from('pine_members')
+          .select('id, display_name')
+          .in('id', friendIds);
+
+        if (!friends || friends.length === 0) {
+          alert('友達が見つかりません');
+          return;
+        }
+
+        // Simple selection dialog
+        const names = friends.map((f, i) => `${i + 1}. ${f.display_name}`).join('\n');
+        const choice = prompt(`DM相手を選んでください:\n${names}\n\n番号を入力:`);
+        if (!choice) return;
+
+        const idx = parseInt(choice) - 1;
+        if (idx < 0 || idx >= friends.length) {
+          alert('無効な選択です');
+          return;
+        }
+
+        const roomId = await RoomService.getOrCreateDM(friends[idx].id);
         location.hash = `room/${roomId}`;
       } catch (err) {
         alert(`エラー: ${err.message}`);
