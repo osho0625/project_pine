@@ -79,6 +79,10 @@ function renderLoginScreen(container) {
 }
 
 function startAuthenticatedApp(container) {
+  // Prevent double initialization
+  if (window._pineAppStarted) return;
+  window._pineAppStarted = true;
+
   // Show header and tab bar (may be hidden from login screen)
   const headerEl = document.querySelector('.pine-header');
   if (headerEl) headerEl.style.display = '';

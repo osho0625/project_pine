@@ -41,12 +41,10 @@ const PresenceService = {
 
   _handleVisibilityChange() {
     if (document.visibilityState === 'hidden') {
-      // Entering background — report no active room
-      pineSupabase.rpc('update_presence', { p_room_id: null }).catch(() => {});
+      pineSupabase.rpc('update_presence', { p_room_id: null }).then(() => {}).catch(() => {});
     } else if (document.visibilityState === 'visible') {
-      // Returning to foreground — restore active room
       if (this._currentRoomId) {
-        pineSupabase.rpc('update_presence', { p_room_id: this._currentRoomId }).catch(() => {});
+        pineSupabase.rpc('update_presence', { p_room_id: this._currentRoomId }).then(() => {}).catch(() => {});
       }
     }
   },

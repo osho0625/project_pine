@@ -426,9 +426,12 @@ const CallService = {
   },
 
   subscribeIncomingCalls() {
+    // Unsubscribe existing before re-subscribing
+    this.unsubscribeIncomingCalls();
+
     // Listen for call_sessions INSERT where I am the callee
     this._incomingCallSubscription = pineSupabase
-      .channel('incoming-calls')
+      .channel('incoming-calls-' + Date.now())
       .on(
         'postgres_changes',
         {
