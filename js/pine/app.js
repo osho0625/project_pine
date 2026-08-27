@@ -116,8 +116,10 @@ function startAuthenticatedApp(container) {
     showTabBar();
     if (activeTab === 'friends') {
       renderFriendsList(container);
-    } else {
+    } else if (activeTab === 'chats') {
       renderRoomList(container);
+    } else if (activeTab === 'profile') {
+      renderProfileView(container);
     }
   }
 

@@ -25,14 +25,17 @@ async function renderRoomList(container) {
     if (dmRoomIds.length > 0) {
       const { data: members } = await pineSupabase
         .from('pine_chat_room_members')
-        .select('chat_room_id, member_id, pine_members(display_name)')
+        .select('chat_room_id, member_id, pine_members(display_name, avatar_url)')
         .in('chat_room_id', dmRoomIds)
         .neq('member_id', user.id)
         .is('left_at', null);
 
       if (members) {
         for (const m of members) {
-          dmMemberNames[m.chat_room_id] = m.pine_members?.display_name || 'DM';
+          dmMemberNames[m.chat_room_id] = {
+            name: m.pine_members?.display_name || 'DM',
+            avatar_url: m.pine_members?.avatar_url || null,
+          };
         }
       }
     }
@@ -50,9 +53,22 @@ async function renderRoomList(container) {
       // Room name: use other member's name for DMs
       const nameEl = document.createElement('div');
       nameEl.className = 'pine-room-name';
+      const dmInfo = dmMemberNames[room.id];
       nameEl.textContent = room.is_group
         ? (room.name || 'グループ')
-        : (dmMemberNames[room.id] || 'DM');
+        : (dmInfo?.name || 'DM');
+
+      // Avatar
+      const avatarEl = document.createElement('div');
+      avatarEl.className = 'pine-avatar';
+      if (!room.is_group && dmInfo?.avatar_url) {
+        avatarEl.innerHTML = `<img src="${dmInfo.avatar_url}" class="pine-avatar-img">`;
+      } else {
+        const initial = room.is_group
+          ? (room.name || 'G').charAt(0)
+          : (dmInfo?.name || '?').charAt(0);
+        avatarEl.textContent = initial;
+      }
 
       // Last message preview
       const previewEl = document.createElement('div');
@@ -90,6 +106,7 @@ async function renderRoomList(container) {
       rightEl.appendChild(timeEl);
       rightEl.appendChild(badgeEl);
 
+      card.appendChild(avatarEl);
       card.appendChild(leftEl);
       card.appendChild(rightEl);
       list.appendChild(card);
