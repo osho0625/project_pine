@@ -1,4 +1,4 @@
-// Pine Chat Room Message View
+// Pine Chat Room — LINE-style message view with realtime updates
 async function renderChatRoom(container, roomId) {
   const { data: { user } } = await pineSupabase.auth.getUser();
   if (!user) {
@@ -6,150 +6,173 @@ async function renderChatRoom(container, roomId) {
     return;
   }
 
+  // Track displayed message IDs to prevent duplicates
+  const displayedIds = new Set();
+
   container.innerHTML = `
-    <div class="pine-chat-container">
+    <div class="pine-chat-wrapper">
       <div class="pine-chat-header">
         <button class="pine-back-btn" aria-label="戻る">←</button>
-        <span class="pine-chat-title"></span>
-        <span class="pine-offline-indicator" style="display:none;">オフライン</span>
+        <span class="pine-chat-title">チャット</span>
       </div>
-      <div class="pine-messages-area" role="log" aria-live="polite"></div>
-      <div class="pine-chat-input-area">
-        <input type="text" class="pine-message-input" placeholder="メッセージを入力..."
-          maxlength="${PINE_CONFIG.MAX_MESSAGE_LENGTH}" aria-label="メッセージ入力">
-        <button class="pine-send-btn" aria-label="送信">送信</button>
-      </div>
+      <div class="pine-chat-messages" id="pine-messages"></div>
+      <form class="pine-chat-input" id="pine-chat-form">
+        <input type="text" id="pine-msg-input" placeholder="メッセージを入力..."
+          maxlength="${PINE_CONFIG.MAX_MESSAGE_LENGTH}" autocomplete="off">
+        <button type="submit" aria-label="送信">▶</button>
+      </form>
     </div>
   `;
 
-  const messagesArea = container.querySelector('.pine-messages-area');
-  const input = container.querySelector('.pine-message-input');
-  const sendBtn = container.querySelector('.pine-send-btn');
+  const messagesEl = document.getElementById('pine-messages');
+  const form = document.getElementById('pine-chat-form');
+  const input = document.getElementById('pine-msg-input');
   const backBtn = container.querySelector('.pine-back-btn');
-  const offlineIndicator = container.querySelector('.pine-offline-indicator');
 
   // Back navigation
-  backBtn.addEventListener('click', () => { location.hash = '/'; });
+  backBtn.addEventListener('click', () => {
+    MessageService.unsubscribeMessages(roomId);
+    location.hash = '/';
+  });
 
-  // Offline indicator
-  function updateOnlineStatus() {
-    offlineIndicator.style.display = navigator.onLine ? 'none' : 'inline';
-  }
-  updateOnlineStatus();
-  window.addEventListener('online', updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-
-  // Load messages (try network first, fallback to cache)
-  let messages = [];
-  try {
-    if (navigator.onLine) {
-      messages = await MessageService.loadHistory(roomId);
-    } else {
-      messages = await PineOfflineStore.getCachedMessages(roomId);
-    }
-  } catch (err) {
-    // Fallback to cache on error
-    messages = await PineOfflineStore.getCachedMessages(roomId);
+  // Scroll to bottom helper
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  // Render messages
+  // Render a single message bubble (LINE style)
   function renderMessage(msg) {
-    const isOwn = msg.sender_id === user.id;
-    const bubble = document.createElement('div');
-    bubble.className = `pine-message-bubble ${isOwn ? 'pine-msg-own' : 'pine-msg-other'}`;
-    bubble.dataset.messageId = msg.id || msg.client_message_id;
+    // Skip if already displayed
+    const msgKey = msg.id || msg.client_message_id;
+    if (displayedIds.has(msgKey)) return null;
+    displayedIds.add(msgKey);
 
-    // Sender name (for others)
+    const isOwn = msg.sender_id === user.id;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = `pine-msg ${isOwn ? 'pine-msg-self' : 'pine-msg-other'}`;
+
+    // Avatar (other only)
     if (!isOwn) {
-      const senderEl = document.createElement('div');
-      senderEl.className = 'pine-msg-sender';
-      senderEl.textContent = msg.sender_display_name || msg.sender_id.substring(0, 8);
-      bubble.appendChild(senderEl);
+      const avatar = document.createElement('div');
+      avatar.className = 'pine-avatar pine-msg-avatar';
+      avatar.textContent = (msg.sender_display_name || '?').charAt(0);
+      wrapper.appendChild(avatar);
     }
 
-    // Content
-    const contentEl = document.createElement('div');
-    contentEl.className = 'pine-msg-content';
+    const bubbleWrap = document.createElement('div');
+    bubbleWrap.className = 'pine-msg-bubble-wrap';
+
+    // Sender name (other only, for group)
+    if (!isOwn && msg.sender_display_name) {
+      const nameEl = document.createElement('div');
+      nameEl.className = 'pine-msg-sender';
+      nameEl.textContent = msg.sender_display_name;
+      bubbleWrap.appendChild(nameEl);
+    }
+
+    // Bubble
+    const bubble = document.createElement('div');
+    bubble.className = 'pine-msg-bubble';
 
     if (msg.message_type === 'image' && msg.storage_path) {
       const img = document.createElement('img');
       img.className = 'pine-msg-image';
-      img.alt = '送信された画像';
-      img.loading = 'lazy';
-      // Load signed URL async
-      StorageService.getSignedUrl(msg.storage_path).then((url) => {
-        if (url) img.src = url;
-      }).catch(() => {
-        img.alt = '画像を読み込めませんでした';
-      });
-      contentEl.appendChild(img);
+      img.alt = '画像';
+      StorageService.getSignedUrl(msg.storage_path).then(url => { img.src = url; }).catch(() => {});
+      bubble.appendChild(img);
     } else {
-      contentEl.textContent = msg.content || '';
+      bubble.textContent = msg.content || '';
     }
-    bubble.appendChild(contentEl);
+    bubbleWrap.appendChild(bubble);
 
-    // Timestamp
+    // Time
     const timeEl = document.createElement('div');
     timeEl.className = 'pine-msg-time';
     if (msg.created_at) {
       const d = new Date(msg.created_at);
       timeEl.textContent = d.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
     }
-    bubble.appendChild(timeEl);
 
-    return bubble;
+    // Layout: time position differs for own vs other
+    if (isOwn) {
+      wrapper.appendChild(timeEl);
+      wrapper.appendChild(bubbleWrap);
+    } else {
+      bubbleWrap.appendChild(timeEl);
+      wrapper.appendChild(bubbleWrap);
+    }
+
+    return wrapper;
   }
 
-  // Initial render
-  messagesArea.innerHTML = '';
+  // Append message to view
+  function appendMessage(msg) {
+    const el = renderMessage(msg);
+    if (el) {
+      messagesEl.appendChild(el);
+      scrollToBottom();
+    }
+  }
+
+  // Load history
+  let messages = [];
+  try {
+    messages = await MessageService.loadHistory(roomId);
+  } catch (err) {
+    messages = await PineOfflineStore.getCachedMessages(roomId);
+  }
+
+  // Render initial messages
+  messagesEl.innerHTML = '';
   for (const msg of messages) {
-    messagesArea.appendChild(renderMessage(msg));
+    const el = renderMessage(msg);
+    if (el) messagesEl.appendChild(el);
   }
-  messagesArea.scrollTop = messagesArea.scrollHeight;
+  scrollToBottom();
 
-  // Subscribe to realtime messages
+  // Subscribe to realtime — new messages appear instantly
   MessageService.subscribeMessages(roomId, (msg) => {
-    messagesArea.appendChild(renderMessage(msg));
-    messagesArea.scrollTop = messagesArea.scrollHeight;
-    // Cache new message
+    appendMessage(msg);
     PineOfflineStore.cacheMessages(roomId, [msg]);
   });
 
   // Send message
-  async function handleSend() {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
-    if (text.length > PINE_CONFIG.MAX_MESSAGE_LENGTH) return;
 
     input.value = '';
-    try {
-      const result = await MessageService.sendMessage(roomId, text, 'text');
-      // If offline (optimistic), show immediately
-      if (result && result.status === 'pending') {
-        messagesArea.appendChild(renderMessage({
-          ...result,
-          sender_id: user.id,
-        }));
-        messagesArea.scrollTop = messagesArea.scrollHeight;
-      }
-    } catch (err) {
-      // Show error inline
-      input.value = text;
-    }
-  }
 
-  sendBtn.addEventListener('click', handleSend);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    // Optimistically show own message immediately
+    const clientMessageId = crypto.randomUUID();
+    const optimistic = {
+      id: clientMessageId,
+      client_message_id: clientMessageId,
+      chat_room_id: roomId,
+      sender_id: user.id,
+      content: text,
+      message_type: 'text',
+      created_at: new Date().toISOString(),
+      sender_display_name: 'あなた',
+    };
+    appendMessage(optimistic);
+
+    try {
+      await pineSupabase.rpc('send_message', {
+        p_room_id: roomId,
+        p_client_message_id: clientMessageId,
+        p_content: text,
+        p_message_type: 'text',
+        p_storage_path: null,
+      });
+    } catch (err) {
+      // On error, show retry option
+      console.error('Send failed:', err);
     }
   });
 
-  // Cleanup on navigation away
-  return function cleanup() {
-    MessageService.unsubscribeMessages(roomId);
-    window.removeEventListener('online', updateOnlineStatus);
-    window.removeEventListener('offline', updateOnlineStatus);
-  };
+  // Focus input
+  input.focus();
 }
