@@ -28,6 +28,10 @@
 })();
 
 function renderLoginScreen(container) {
+  // Hide tab bar and header actions during login
+  const tabBar = document.getElementById('pine-tab-bar');
+  if (tabBar) tabBar.style.display = 'none';
+
   container.innerHTML = `
     <div class="pine-invite-panel">
       <h2>🍍 Pine</h2>
@@ -35,49 +39,26 @@ function renderLoginScreen(container) {
       <form id="login-form" class="pine-invite-form">
         <label for="login-email">メールアドレス</label>
         <input type="email" id="login-email" placeholder="you@example.com" required />
-        <button type="submit" class="pine-btn pine-btn-primary">ログインリンクを送信</button>
+        <label for="login-password">パスワード</label>
+        <input type="password" id="login-password" placeholder="パスワード" required />
+        <button type="submit" class="pine-btn pine-btn-primary">ログイン</button>
       </form>
-      <div id="otp-section" style="display:none;">
-        <p style="color: var(--pine-green-dark); font-weight: 600;">✉️ メールをチェックしてください</p>
-        <p style="font-size: 13px; color: #666;">ログインリンクを送信しました。メール内のリンクをクリックするとログインできます。</p>
-      </div>
       <div id="login-error" class="pine-error" style="display:none;"></div>
-      <div id="login-success" class="pine-success" style="display:none;"></div>
-      <hr style="margin: 20px 0;">
-      <p style="font-size: 13px; color: #888;">招待リンクをお持ちの方は、リンクから直接参加できます。</p>
     </div>
   `;
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
     errorEl.style.display = 'none';
 
     try {
-      await PineAuth.signInWithOtp(email);
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('otp-section').style.display = 'block';
+      await PineAuth.signInWithPassword(email, password);
+      // Auth state change listener will handle navigation
     } catch (err) {
-      errorEl.textContent = `エラー: ${err.message}`;
-      errorEl.style.display = 'block';
-    }
-  });
-
-  document.getElementById('otp-verify-btn').addEventListener('click', async () => {
-    const otp = document.getElementById('otp-input').value.trim();
-    const errorEl = document.getElementById('login-error');
-    errorEl.style.display = 'none';
-
-    if (!otp) return;
-
-    try {
-      await PineAuth.verifyOtp(loginEmail, otp);
-      document.getElementById('login-success').textContent = 'ログイン成功！';
-      document.getElementById('login-success').style.display = 'block';
-      // Auth state change listener will handle the rest
-    } catch (err) {
-      errorEl.textContent = `エラー: ${err.message}`;
+      errorEl.textContent = `ログインに失敗しました: ${err.message}`;
       errorEl.style.display = 'block';
     }
   });
@@ -118,8 +99,6 @@ function startAuthenticatedApp(container) {
       renderFriendsList(container);
     } else if (activeTab === 'chats') {
       renderRoomList(container);
-    } else if (activeTab === 'profile') {
-      renderProfileView(container);
     }
   }
 
@@ -149,6 +128,15 @@ function startAuthenticatedApp(container) {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.style.display = 'none';
     });
+  });
+
+  // Settings button → profile view
+  const settingsBtn = document.getElementById('pine-settings-btn');
+  settingsBtn.addEventListener('click', () => {
+    hideTabBar();
+    document.querySelector('.pine-header').style.display = 'none';
+    document.getElementById('pine-tab-bar').style.display = 'none';
+    renderProfileView(container);
   });
 
   // Setup router

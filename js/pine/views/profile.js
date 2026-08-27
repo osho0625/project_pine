@@ -18,6 +18,10 @@ async function renderProfileView(container) {
 
   container.innerHTML = `
     <div class="pine-profile-page">
+      <div class="pine-profile-header">
+        <button class="pine-back-btn" id="pine-profile-back">‹</button>
+        <span>設定</span>
+      </div>
       <div class="pine-profile-avatar-section">
         <div class="pine-profile-avatar" id="pine-profile-avatar">
           ${avatarUrl ? `<img src="${avatarUrl}" class="pine-avatar-img">` : (displayName.charAt(0) || '?')}
@@ -34,6 +38,14 @@ async function renderProfileView(container) {
 
       <div class="pine-profile-info">
         <p>📧 ${user.email || '未設定'}</p>
+      </div>
+
+      <hr>
+
+      <div class="pine-profile-form">
+        <label>パスワード変更</label>
+        <input type="password" id="pine-new-password" placeholder="新しいパスワード" minlength="6">
+        <button class="pine-btn pine-btn-primary" id="pine-change-password-btn">パスワード変更</button>
       </div>
 
       <hr>
@@ -107,10 +119,33 @@ async function renderProfileView(container) {
     }
   });
 
+  // Change password
+  document.getElementById('pine-change-password-btn').addEventListener('click', async () => {
+    const newPw = document.getElementById('pine-new-password').value;
+    if (!newPw || newPw.length < 6) {
+      alert('パスワードは6文字以上で入力してください');
+      return;
+    }
+    try {
+      await PineAuth.updatePassword(newPw);
+      document.getElementById('pine-new-password').value = '';
+      alert('パスワードを変更しました');
+    } catch (err) {
+      alert(`エラー: ${err.message}`);
+    }
+  });
+
   // Logout
   document.getElementById('pine-logout-btn').addEventListener('click', async () => {
     if (!confirm('ログアウトしますか？')) return;
     await PineAuth.signOut();
     location.reload();
+  });
+
+  // Back to main
+  document.getElementById('pine-profile-back').addEventListener('click', () => {
+    document.querySelector('.pine-header').style.display = '';
+    document.getElementById('pine-tab-bar').style.display = '';
+    location.hash = '/';
   });
 }

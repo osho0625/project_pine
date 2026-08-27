@@ -1,5 +1,14 @@
 // Pine Auth Service
 const PineAuth = {
+  async signInWithPassword(email, password) {
+    const { data, error } = await pineSupabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
+  },
+
   async signInWithOtp(email) {
     const { error } = await pineSupabase.auth.signInWithOtp({
       email,
@@ -7,6 +16,11 @@ const PineAuth = {
         emailRedirectTo: window.location.origin + PINE_CONFIG.BASE_PATH + '/pages/pine.html',
       },
     });
+    if (error) throw error;
+  },
+
+  async updatePassword(newPassword) {
+    const { error } = await pineSupabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
   },
 

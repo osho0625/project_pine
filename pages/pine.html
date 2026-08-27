@@ -10,13 +10,15 @@
 <body>
   <header class="pine-header">
     <span class="pine-header-title">🍍 Pine</span>
-    <button class="pine-header-add-btn" id="pine-add-btn" aria-label="招待">+</button>
+    <div class="pine-header-actions">
+      <button class="pine-header-icon-btn" id="pine-add-btn" aria-label="招待">+</button>
+      <button class="pine-header-icon-btn" id="pine-settings-btn" aria-label="設定">⚙</button>
+    </div>
   </header>
 
   <nav class="pine-tab-bar" id="pine-tab-bar">
     <button class="pine-tab active" data-tab="friends">👥 友達</button>
     <button class="pine-tab" data-tab="chats">💬 チャット</button>
-    <button class="pine-tab" data-tab="profile">⚙ 設定</button>
   </nav>
 
   <div id="app-container"></div>
