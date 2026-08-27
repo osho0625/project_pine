@@ -19,7 +19,8 @@ pine/
 │   ├── config.js            # 設定 (Supabase URL, constants)
 │   ├── supabase-client.js   # Supabaseクライアント初期化
 │   ├── router.js            # Hash-based SPA router
-│   ├── auth-service.js      # 認証 (OTP/Magic Link)
+│   ├── app.js               # アプリ初期化 + ログイン + タブ管理
+│   ├── auth-service.js      # 認証 (Password / OTP)
 │   ├── room-service.js      # Room管理RPC wrapper
 │   ├── message-service.js   # メッセージ送信 + Realtime + Outbox
 │   ├── call-service.js      # WebRTC通話ライフサイクル
@@ -29,16 +30,18 @@ pine/
 │   ├── storage-service.js   # 画像upload/signed URL
 │   ├── offline-store.js     # IndexedDB (cache + outbox)
 │   └── views/               # UI Views
-│       ├── room-list.js     # ルーム一覧
-│       ├── chat-room.js     # チャット画面
+│       ├── friends-list.js  # 友達一覧（タップでDM）
+│       ├── room-list.js     # チャット一覧（履歴あるルーム）
+│       ├── chat-room.js     # LINE風チャット画面
 │       ├── call-screen.js   # 通話画面
-│       └── invite.js        # 招待画面
+│       ├── invite.js        # 招待モーダル
+│       └── profile.js       # プロフィール設定
 ├── css/pine.css             # LINE風スタイル
 ├── sw.js                    # Service Worker
 ├── manifest.json            # PWA Manifest
 ├── index.html               # GitHub Pages redirect
-├── images/                  # アイコン
-├── sql/                     # Supabase SQL migrations (001-014)
+├── images/                  # アイコン (192x192, 512x512)
+├── sql/                     # Supabase SQL migrations (001-016)
 ├── supabase/functions/      # Edge Functions (4本)
 │   ├── push-notify/
 │   ├── generate-invite/
