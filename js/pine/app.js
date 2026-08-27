@@ -98,6 +98,10 @@ function startAuthenticatedApp(container) {
   function showTabBar() {
     tabBar.classList.remove('pine-hide-tabs');
     document.body.classList.remove('pine-hide-tabs');
+    // Restore header and tab bar visibility (may have been hidden by room/profile views)
+    const headerEl = document.querySelector('.pine-header');
+    if (headerEl) headerEl.style.display = '';
+    tabBar.style.display = '';
   }
 
   function hideTabBar() {
