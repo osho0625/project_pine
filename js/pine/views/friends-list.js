@@ -49,11 +49,18 @@ async function renderFriendsList(container) {
     const list = document.createElement('div');
     list.className = 'pine-friend-list';
 
+    // Avatar gradient color assignment based on first character
+    function getAvatarColor(name) {
+      const colors = ['green', 'blue', 'purple', 'orange', 'pink', 'teal', 'indigo', 'amber'];
+      const charCode = (name || '?').charCodeAt(0);
+      return colors[charCode % colors.length];
+    }
+
     for (const friend of friends) {
       const card = document.createElement('div');
       card.className = 'pine-friend-card';
 
-      // Avatar
+      // Avatar — larger (48px via CSS) with gradient background
       const avatarEl = document.createElement('div');
       avatarEl.className = 'pine-avatar';
       if (friend.avatar_url) {
@@ -64,7 +71,9 @@ async function renderFriendsList(container) {
         avatarEl.innerHTML = '';
         avatarEl.appendChild(img);
       } else {
-        avatarEl.textContent = (friend.display_name || '?').charAt(0).toUpperCase();
+        const initial = (friend.display_name || '?').charAt(0).toUpperCase();
+        avatarEl.textContent = initial;
+        avatarEl.setAttribute('data-color', getAvatarColor(friend.display_name));
       }
 
       // Name
