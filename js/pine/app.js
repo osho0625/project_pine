@@ -34,26 +34,22 @@ function renderLoginScreen(container) {
   const header = document.querySelector('.pine-header');
   if (header) header.style.display = 'none';
 
-  // User list for password-only login
-  const users = [
-    { name: 'りょうすけ', email: 'd29.ll.tennis@gmail.com' },
-    { name: 'めぐみ', email: 'toppo5526@gmail.com' },
-    { name: 'はるちか', email: 'dazanyo860@bangban.uk' },
-    { name: 'いろは', email: 'zinufedo947@mama3.org' },
-    { name: 'かいせい', email: 'yokyanokyo@usagica.com' },
-  ];
-
-  const options = users.map(u => `<option value="${u.email}">${u.name}</option>`).join('');
+  // Username to email map
+  const userMap = {
+    'りょうすけ': 'd29.ll.tennis@gmail.com',
+    'めぐみ': 'toppo5526@gmail.com',
+    'はるちか': 'dazanyo860@bangban.uk',
+    'いろは': 'zinufedo947@mama3.org',
+    'かいせい': 'yokyanokyo@usagica.com',
+  };
 
   container.innerHTML = `
     <div class="pine-invite-panel">
       <h2>🍍 Pine</h2>
       <p>家族チャットアプリ</p>
       <form id="login-form" class="pine-invite-form">
-        <label for="login-user">ユーザー</label>
-        <select id="login-user" class="pine-select">
-          ${options}
-        </select>
+        <label for="login-user">ユーザー名 or メールアドレス</label>
+        <input type="text" id="login-user" placeholder="りょうすけ or email" required />
         <label for="login-password">パスワード</label>
         <input type="password" id="login-password" placeholder="パスワード" required />
         <button type="submit" class="pine-btn pine-btn-primary">ログイン</button>
@@ -64,14 +60,16 @@ function renderLoginScreen(container) {
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-user').value;
+    const userInput = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
     errorEl.style.display = 'none';
 
+    // Resolve username to email if needed
+    const email = userMap[userInput] || userInput;
+
     try {
       await PineAuth.signInWithPassword(email, password);
-      // Directly start the app (don't wait for auth listener)
       startAuthenticatedApp(container);
     } catch (err) {
       errorEl.textContent = `ログインに失敗しました: ${err.message}`;
