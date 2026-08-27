@@ -6,6 +6,15 @@
   await PineOfflineStore.init();
   PineOfflineStore.recoverStuckItems();
 
+  // Listen for auth changes (must register before checking session)
+  PineAuth.onAuthChange((event, session) => {
+    if (event === 'SIGNED_OUT' || !session) {
+      renderLoginScreen(container);
+    } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      startAuthenticatedApp(container);
+    }
+  });
+
   // Check auth state
   const session = await PineAuth.getSession();
 
@@ -16,15 +25,6 @@
 
   // Authenticated — start the app
   startAuthenticatedApp(container);
-
-  // Listen for auth changes
-  PineAuth.onAuthChange((event, session) => {
-    if (event === 'SIGNED_OUT' || !session) {
-      renderLoginScreen(container);
-    } else if (event === 'SIGNED_IN') {
-      startAuthenticatedApp(container);
-    }
-  });
 })();
 
 function renderLoginScreen(container) {
