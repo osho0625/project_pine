@@ -79,11 +79,6 @@ function renderLoginScreen(container) {
     }
   });
 }
-      errorEl.textContent = `ログインに失敗しました: ${err.message}`;
-      errorEl.style.display = 'block';
-    }
-  });
-}
 
 function startAuthenticatedApp(container) {
   // Initialize services
