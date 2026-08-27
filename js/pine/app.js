@@ -49,7 +49,7 @@ function renderLoginScreen(container) {
       <p>家族チャットアプリ</p>
       <form id="login-form" class="pine-invite-form">
         <label for="login-user">ユーザー名 or メールアドレス</label>
-        <input type="text" id="login-user" placeholder="りょうすけ or email" required />
+        <input type="text" id="login-user" placeholder="ユーザー名 or example@exs.com" required />
         <label for="login-password">パスワード</label>
         <input type="password" id="login-password" placeholder="パスワード" required />
         <button type="submit" class="pine-btn pine-btn-primary">ログイン</button>
