@@ -89,23 +89,74 @@ function startAuthenticatedApp(container) {
   PresenceService.init();
   CallService.init();
 
+  const tabBar = document.getElementById('pine-tab-bar');
+  const addBtn = document.getElementById('pine-add-btn');
+  let activeTab = 'friends';
+
+  // Tab bar helper
+  function showTabBar() {
+    tabBar.classList.remove('pine-hide-tabs');
+    document.body.classList.remove('pine-hide-tabs');
+  }
+
+  function hideTabBar() {
+    tabBar.classList.add('pine-hide-tabs');
+    document.body.classList.add('pine-hide-tabs');
+  }
+
+  function setActiveTab(tab) {
+    activeTab = tab;
+    const tabs = tabBar.querySelectorAll('.pine-tab');
+    tabs.forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+  }
+
+  function renderActiveTab() {
+    showTabBar();
+    if (activeTab === 'friends') {
+      renderFriendsList(container);
+    } else {
+      renderRoomList(container);
+    }
+  }
+
+  // Tab click handlers
+  tabBar.addEventListener('click', (e) => {
+    const tab = e.target.closest('.pine-tab');
+    if (!tab) return;
+    const tabName = tab.dataset.tab;
+    if (tabName === activeTab) return;
+    setActiveTab(tabName);
+    location.hash = '';
+    renderActiveTab();
+  });
+
+  // + button → invite
+  addBtn.addEventListener('click', () => {
+    location.hash = 'invite';
+  });
+
   // Setup router
   const router = new PineRouter();
 
   router.on('/', () => {
-    renderRoomList(container);
+    renderActiveTab();
   });
 
   router.on('room/:id', (params) => {
+    hideTabBar();
     renderChatRoom(container, params.id);
     PresenceService.enterRoom(params.id);
   });
 
   router.on('call/:id', (params) => {
+    hideTabBar();
     renderCallScreen(container, params.id, 'caller');
   });
 
   router.on('invite', () => {
+    hideTabBar();
     renderInviteView(container);
   });
 
