@@ -19,7 +19,12 @@
   const session = await PineAuth.getSession();
 
   if (!session) {
-    renderLoginScreen(container);
+    // If arriving via an invite link, show the invite acceptance flow instead
+    if (/invite\/[a-zA-Z0-9_-]+/.test(location.hash)) {
+      renderInviteView(container);
+    } else {
+      renderLoginScreen(container);
+    }
     return;
   }
 
@@ -167,6 +172,9 @@ function startAuthenticatedApp(container) {
     renderProfileView(container);
   });
 
+  // Highlight the default active tab
+  setActiveTab(activeTab);
+
   // Setup router
   const router = new PineRouter();
 
@@ -177,7 +185,7 @@ function startAuthenticatedApp(container) {
   router.on('room/:id', (params) => {
     hideTabBar();
     renderChatRoom(container, params.id);
-    PresenceService.enterRoom(params.id);
+    Promise.resolve(PresenceService.enterRoom(params.id)).catch(() => {});
   });
 
   router.on('call/:id', (params) => {
@@ -185,20 +193,15 @@ function startAuthenticatedApp(container) {
     renderCallScreen(container, params.id, 'caller');
   });
 
-  router.on('invite', () => {
+  router.on('invite/:code', () => {
     hideTabBar();
     renderInviteView(container);
   });
 
-  // Handle invite code in URL
-  const hash = location.hash;
-  if (hash.includes('invite?code=')) {
-    const code = hash.split('code=')[1];
-    if (code) {
-      renderInviteView(container);
-      return;
-    }
-  }
+  router.on('invite', () => {
+    hideTabBar();
+    renderInviteView(container);
+  });
 
   router.start();
 

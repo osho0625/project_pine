@@ -1,9 +1,10 @@
-// Pine App Configuration
+﻿// Pine App Configuration
 const PINE_CONFIG = {
   BASE_PATH: new URL(document.currentScript.src).pathname.split('/js/')[0] || '',
   SUPABASE_URL: 'https://snxvohbfuqdqrwygqpzl.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNueHZvaGJmdXFkcXJ3eWdxcHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NzA5MTcsImV4cCI6MjEwMzM0NjkxN30.sml7VdMTLATHQjjravxwrNGvVbKu96RN5b8iBLLpAIQ',
   PUSH_SUPPRESS_TTL: 30, // seconds
+  VAPID_PUBLIC_KEY: 'BGx8E64XKlB1eLR6TmJW5UlsCmIHHCwjHzav7r_D2Or4qPPUTevQ3Y_0yCfeILwiCK_uVRKh7vGEsMZmD-HilOo',
   HEARTBEAT_INTERVAL: 15000, // 15 seconds
   OUTBOX_STUCK_TIMEOUT: 5 * 60 * 1000, // 5 minutes
   MAX_MESSAGE_LENGTH: 4000,

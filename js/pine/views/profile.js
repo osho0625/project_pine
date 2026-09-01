@@ -1,4 +1,4 @@
-// Pine Profile View — プロフィール設定 + ログアウト
+﻿// Pine Profile View — プロフィール設定 + ログアウト
 async function renderProfileView(container) {
   const { data: { user } } = await pineSupabase.auth.getUser();
   if (!user) {
@@ -46,6 +46,13 @@ async function renderProfileView(container) {
         <label>パスワード変更</label>
         <input type="password" id="pine-new-password" placeholder="新しいパスワード" minlength="6">
         <button class="pine-btn pine-btn-primary" id="pine-change-password-btn">パスワード変更</button>
+      </div>
+      <hr>
+
+      <div class="pine-profile-form">
+        <label>プッシュ通知</label>
+        <button class="pine-btn pine-btn-primary" id="pine-push-toggle-btn">通知を有効にする</button>
+        <div id="pine-push-status" style="font-size:12px; color:#888; margin-top:6px;"></div>
       </div>
 
       <hr>
@@ -132,6 +139,54 @@ async function renderProfileView(container) {
       alert('パスワードを変更しました');
     } catch (err) {
       alert(`エラー: ${err.message}`);
+    }
+  });
+
+
+  // Push notification toggle
+  const pushToggleBtn = document.getElementById('pine-push-toggle-btn');
+  const pushStatus = document.getElementById('pine-push-status');
+
+  async function updatePushUI() {
+    try {
+      if (!('PushManager' in window)) {
+        pushToggleBtn.textContent = '非対応ブラウザ';
+        pushToggleBtn.disabled = true;
+        pushStatus.textContent = 'このブラウザはプッシュ通知に対応していません';
+        return;
+      }
+      const subscribed = await PushService.isSubscribed();
+      if (subscribed) {
+        pushToggleBtn.textContent = '通知を無効にする';
+        pushToggleBtn.className = 'pine-btn pine-btn-danger';
+        pushStatus.textContent = ' プッシュ通知は有効です';
+      } else {
+        pushToggleBtn.textContent = '通知を有効にする';
+        pushToggleBtn.className = 'pine-btn pine-btn-primary';
+        pushStatus.textContent = '';
+      }
+    } catch (e) {
+      pushStatus.textContent = 'ステータス確認エラー';
+    }
+  }
+  updatePushUI();
+
+  pushToggleBtn.addEventListener('click', async () => {
+    pushToggleBtn.disabled = true;
+    try {
+      const subscribed = await PushService.isSubscribed();
+      if (subscribed) {
+        await PushService.unsubscribe();
+        pushStatus.textContent = '通知を無効にしました';
+      } else {
+        await PushService.subscribe();
+        pushStatus.textContent = ' 通知を有効にしました';
+      }
+      await updatePushUI();
+    } catch (err) {
+      pushStatus.textContent = `エラー: ${err.message}`;
+    } finally {
+      pushToggleBtn.disabled = false;
     }
   });
 

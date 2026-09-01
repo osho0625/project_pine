@@ -1,10 +1,9 @@
-// Pine Push Service — manages Web Push subscription lifecycle
+﻿// Pine Push Service - manages Web Push subscription lifecycle
 const PushService = {
   _vapidPublicKey: null,
 
   async getVapidPublicKey() {
     if (this._vapidPublicKey) return this._vapidPublicKey;
-    // Use config if available, otherwise fetch from server
     if (PINE_CONFIG.VAPID_PUBLIC_KEY) {
       this._vapidPublicKey = PINE_CONFIG.VAPID_PUBLIC_KEY;
     } else {
@@ -54,9 +53,10 @@ const PushService = {
       .upsert({
         member_id: user.id,
         endpoint: subJson.endpoint,
-        p256dh: subJson.keys.p256dh,
-        auth: subJson.keys.auth,
-        updated_at: new Date().toISOString(),
+        keys_p256dh: subJson.keys.p256dh,
+        keys_auth: subJson.keys.auth,
+        user_agent: navigator.userAgent,
+        last_used_at: new Date().toISOString(),
       }, { onConflict: 'endpoint' });
 
     if (error) throw error;
@@ -81,6 +81,12 @@ const PushService = {
       // Unsubscribe from push manager
       await subscription.unsubscribe();
     }
+  },
+
+  async isSubscribed() {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    return !!subscription;
   },
 
   getPermissionState() {

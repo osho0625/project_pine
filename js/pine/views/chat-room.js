@@ -6,8 +6,11 @@ async function renderChatRoom(container, roomId) {
     return;
   }
 
-  // Track displayed message IDs to prevent duplicates
+  // Track displayed message keys (by id AND client_message_id) to prevent duplicates
   const displayedIds = new Set();
+
+  // Map of member_id -> { display_name, avatar_url } for rendering sender info
+  const memberNames = {};
 
   container.innerHTML = `
     <div class="pine-chat-wrapper">
@@ -19,7 +22,7 @@ async function renderChatRoom(container, roomId) {
       <div class="pine-chat-messages" id="pine-messages"></div>
       <form class="pine-chat-input" id="pine-chat-form">
         <input type="text" id="pine-msg-input" placeholder="メッセージを入力..."
-          maxlength="${PINE_CONFIG.MAX_MESSAGE_LENGTH}" autocomplete="off">
+               maxlength="${PINE_CONFIG.MAX_MESSAGE_LENGTH}" autocomplete="off">
         <button type="submit" aria-label="送信">▶</button>
       </form>
     </div>
@@ -31,6 +34,27 @@ async function renderChatRoom(container, roomId) {
   const backBtn = container.querySelector('.pine-back-btn');
   const titleEl = container.querySelector('.pine-chat-title');
 
+  // Fetch room members' profiles (two-step to avoid RLS nested-select issues)
+  try {
+    const { data: roomMembers } = await pineSupabase
+      .from('pine_chat_room_members')
+      .select('member_id')
+      .eq('chat_room_id', roomId)
+      .is('left_at', null);
+
+    const memberIds = (roomMembers || []).map(rm => rm.member_id);
+    if (memberIds.length > 0) {
+      const { data: profiles } = await pineSupabase
+        .from('pine_members')
+        .select('id, display_name, avatar_url')
+        .in('id', memberIds);
+
+      for (const p of profiles || []) {
+        memberNames[p.id] = { display_name: p.display_name, avatar_url: p.avatar_url };
+      }
+    }
+  } catch (e) { /* ignore */ }
+
   // Fetch room info for title
   try {
     const { data: roomData } = await pineSupabase
@@ -41,14 +65,8 @@ async function renderChatRoom(container, roomId) {
 
     if (roomData && !roomData.is_group) {
       // DM: show other member's name
-      const { data: otherMember } = await pineSupabase
-        .from('pine_chat_room_members')
-        .select('pine_members(display_name)')
-        .eq('chat_room_id', roomId)
-        .neq('member_id', user.id)
-        .is('left_at', null)
-        .single();
-      titleEl.textContent = otherMember?.pine_members?.display_name || 'チャット';
+      const otherId = Object.keys(memberNames).find(id => id !== user.id);
+      titleEl.textContent = (otherId && memberNames[otherId]?.display_name) || 'チャット';
     } else if (roomData) {
       titleEl.textContent = roomData.name || 'グループ';
     }
@@ -73,12 +91,19 @@ async function renderChatRoom(container, roomId) {
 
   // Render a single message bubble (LINE style)
   function renderMessage(msg) {
-    // Skip if already displayed
-    const msgKey = msg.id || msg.client_message_id;
-    if (displayedIds.has(msgKey)) return null;
-    displayedIds.add(msgKey);
+    // Dedup by both real id and client_message_id
+    const idKey = msg.id;
+    const cidKey = msg.client_message_id;
+    if ((idKey && displayedIds.has(idKey)) || (cidKey && displayedIds.has(cidKey))) {
+      return null;
+    }
+    if (idKey) displayedIds.add(idKey);
+    if (cidKey) displayedIds.add(cidKey);
 
     const isOwn = msg.sender_id === user.id;
+    const senderInfo = memberNames[msg.sender_id] || {};
+    const senderName = isOwn ? 'あなた' : (senderInfo.display_name || '');
+    const senderAvatar = senderInfo.avatar_url || null;
 
     const wrapper = document.createElement('div');
     wrapper.className = `pine-msg ${isOwn ? 'pine-msg-self' : 'pine-msg-other'}`;
@@ -87,18 +112,22 @@ async function renderChatRoom(container, roomId) {
     if (!isOwn) {
       const avatar = document.createElement('div');
       avatar.className = 'pine-avatar pine-msg-avatar';
-      avatar.textContent = (msg.sender_display_name || '?').charAt(0);
+      if (senderAvatar) {
+        avatar.innerHTML = `<img src="${senderAvatar}" class="pine-avatar-img">`;
+      } else {
+        avatar.textContent = (senderName || '?').charAt(0);
+      }
       wrapper.appendChild(avatar);
     }
 
     const bubbleWrap = document.createElement('div');
     bubbleWrap.className = 'pine-msg-bubble-wrap';
 
-    // Sender name (other only, for group)
-    if (!isOwn && msg.sender_display_name) {
+    // Sender name (other only)
+    if (!isOwn && senderName) {
       const nameEl = document.createElement('div');
       nameEl.className = 'pine-msg-sender';
-      nameEl.textContent = msg.sender_display_name;
+      nameEl.textContent = senderName;
       bubbleWrap.appendChild(nameEl);
     }
 
@@ -176,8 +205,11 @@ async function renderChatRoom(container, roomId) {
 
     input.value = '';
 
-    // Optimistically show own message immediately
+    // Generate client_message_id and register it so the realtime echo is deduped
     const clientMessageId = crypto.randomUUID();
+    MessageService._seenClientIds.add(clientMessageId);
+
+    // Optimistically show own message immediately
     const optimistic = {
       id: clientMessageId,
       client_message_id: clientMessageId,
@@ -186,7 +218,6 @@ async function renderChatRoom(container, roomId) {
       content: text,
       message_type: 'text',
       created_at: new Date().toISOString(),
-      sender_display_name: 'あなた',
     };
     appendMessage(optimistic);
 

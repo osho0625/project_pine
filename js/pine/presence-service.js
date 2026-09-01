@@ -49,13 +49,20 @@ const PresenceService = {
     }
   },
 
+  _boundVisibilityHandler: null,
+
   init() {
-    document.addEventListener('visibilitychange', () => this._handleVisibilityChange());
+    if (!this._boundVisibilityHandler) {
+      this._boundVisibilityHandler = () => this._handleVisibilityChange();
+    }
+    document.addEventListener('visibilitychange', this._boundVisibilityHandler);
     this.startHeartbeat();
   },
 
   destroy() {
     this.stopHeartbeat();
-    document.removeEventListener('visibilitychange', this._handleVisibilityChange);
+    if (this._boundVisibilityHandler) {
+      document.removeEventListener('visibilitychange', this._boundVisibilityHandler);
+    }
   },
 };
